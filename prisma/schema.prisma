@@ -1,0 +1,425 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ============================================================================
+// USER & AUTHENTICATION
+// ============================================================================
+
+// Roles: STUDENT, TEACHER, MODERATOR, MANAGER, ADMIN
+model User {
+  userUid       String    @id @default(uuid()) @map("user_uid")
+  email         String    @unique
+  name          String?
+  role          String    @default("STUDENT") // STUDENT, TEACHER, MODERATOR, MANAGER, ADMIN
+  passwordHash  String    @map("password_hash")
+  avatarUrl     String?   @map("avatar_url")
+  bio           String?
+  firstName     String?   @map("first_name")
+  lastName      String?   @map("last_name")
+  middleName    String?   @map("middle_name")
+  phone         String?   @map("phone")
+  city          String?   @map("city")
+  country       String?   @map("country")
+  timezone      String?   @map("timezone")
+  organization  String?   @map("organization")
+  position      String?   @map("position")
+  subjects      String?   @map("subjects")
+  gradeLevel    String?   @map("grade_level")
+  experienceYears Int?    @map("experience_years")
+  education     String?   @map("education")
+  websiteUrl    String?   @map("website_url")
+  telegram      String?   @map("telegram")
+  vk            String?   @map("vk")
+  linkedin      String?   @map("linkedin")
+  isProfilePublic Boolean @default(true) @map("is_profile_public")
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  courses       Course[]  @relation("CourseAuthor")
+  enrollments   Enrollment[]
+  payments      Payment[]
+  progress      Progress[]
+  quizAttempts  QuizAttempt[]
+  certificates  Certificate[]
+  notifications Notification[]
+  comments      Comment[]
+  assignments   Assignment[] @relation("AssignmentAuthor")
+  assignmentSubmissions AssignmentSubmission[]
+  courseFavorites CourseFavorite[]
+  courseRatings  CourseRating[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+// ============================================================================
+// COURSE STRUCTURE
+// ============================================================================
+
+model Category {
+  categoryUid    String    @id @default(uuid()) @map("category_uid")
+  name          String    @unique
+  slug          String    @unique
+  description   String?
+  orderIndex    Int       @default(0) @map("order_index")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  courses       Course[]
+
+  @@map("categories")
+}
+
+model Course {
+  courseUid     String        @id @default(uuid()) @map("course_uid")
+  title         String
+  description   String?
+  thumbnailUrl  String?       @map("thumbnail_url")
+  categoryUid   String?      @map("category_uid")
+  orderIndex    Int           @default(0) @map("order_index")
+  isPublished   Boolean       @default(false) @map("is_published")
+  difficulty    String?       // BEGINNER, INTERMEDIATE, ADVANCED
+  estimatedHours Int?         @map("estimated_hours")
+  price         Float?        @default(0)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  authorUid     String        @map("author_uid")
+  author        User          @relation("CourseAuthor", fields: [authorUid], references: [userUid])
+  category      Category?     @relation(fields: [categoryUid], references: [categoryUid])
+  lessons       Lesson[]
+  quizzes       Quiz[]
+  enrollments   Enrollment[]
+  payments      Payment[]
+  tags          CourseTag[]
+  comments      Comment[]
+  favorites     CourseFavorite[]
+  ratings       CourseRating[]
+
+  @@index([authorUid])
+  @@index([categoryUid])
+  @@index([isPublished])
+  @@map("courses")
+}
+
+model Tag {
+  tagUid        String    @id @default(uuid()) @map("tag_uid")
+  name          String    @unique
+  slug          String    @unique
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  courses       CourseTag[]
+
+  @@map("tags")
+}
+
+model CourseTag {
+  courseUid     String    @map("course_uid")
+  tagUid        String    @map("tag_uid")
+  course        Course    @relation(fields: [courseUid], references: [courseUid])
+  tag           Tag        @relation(fields: [tagUid], references: [tagUid])
+
+  @@id([courseUid, tagUid])
+  @@index([courseUid])
+  @@index([tagUid])
+  @@map("course_tags")
+}
+
+// ============================================================================
+// FAVORITES & RATINGS
+// ============================================================================
+
+model CourseFavorite {
+  userUid   String   @map("user_uid")
+  courseUid String   @map("course_uid")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userUid], references: [userUid])
+  course Course @relation(fields: [courseUid], references: [courseUid])
+
+  @@id([userUid, courseUid])
+  @@index([userUid])
+  @@index([courseUid])
+  @@map("course_favorites")
+}
+
+model CourseRating {
+  ratingUid String   @id @default(uuid()) @map("rating_uid")
+  userUid   String   @map("user_uid")
+  courseUid String   @map("course_uid")
+  rating    Int      // 1-5
+  review    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user   User   @relation(fields: [userUid], references: [userUid])
+  course Course @relation(fields: [courseUid], references: [courseUid])
+
+  @@unique([userUid, courseUid])
+  @@index([courseUid])
+  @@index([userUid])
+  @@map("course_ratings")
+}
+
+// ============================================================================
+// LEARNING CONTENT
+// ============================================================================
+
+model Lesson {
+  lessonUid     String    @id @default(uuid()) @map("lesson_uid")
+  title         String
+  description   String?
+  content       String?   // Markdown content
+  videoUrl      String?   @map("video_url")
+  duration      Int?      // seconds
+  orderIndex    Int       @default(0) @map("order_index")
+  isFree        Boolean   @default(false) @map("is_free")
+  courseUid     String    @map("course_uid")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  course        Course    @relation(fields: [courseUid], references: [courseUid])
+  progress      Progress[]
+  assignments   Assignment[]
+
+  @@index([courseUid])
+  @@map("lessons")
+}
+
+model Quiz {
+  quizUid       String        @id @default(uuid()) @map("quiz_uid")
+  title         String
+  description   String?
+  courseUid     String        @map("course_uid")
+  passingScore  Int?          @default(70) @map("passing_score") // percentage
+  timeLimit     Int?          @map("time_limit") // minutes
+  maxAttempts   Int?          @map("max_attempts")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  course        Course        @relation(fields: [courseUid], references: [courseUid])
+  questions     Question[]
+  quizAttempts QuizAttempt[]
+  assignments  Assignment[]
+
+  @@index([courseUid])
+  @@map("quizzes")
+}
+
+model Question {
+  questionUid   String        @id @default(uuid()) @map("question_uid")
+  text          String
+  type          String        @default("MULTIPLE_CHOICE") // MULTIPLE_CHOICE, SINGLE_CHOICE, TRUE_FALSE
+  options       String        // JSON: { optionUid: string, text: string }[]
+  correctOptions String       @map("correct_options") // JSON: string[] - UUIDs
+  explanation   String?
+  points        Int           @default(1)
+  quizUid       String        @map("quiz_uid")
+  orderIndex    Int           @default(0) @map("order_index")
+
+  quiz          Quiz          @relation(fields: [quizUid], references: [quizUid])
+
+  @@index([quizUid])
+  @@map("questions")
+}
+
+model Assignment {
+  assignmentUid String    @id @default(uuid()) @map("assignment_uid")
+  title         String
+  description   String?
+  instructions  String?   // Markdown
+  videoUrl      String?   @map("video_url")
+  imageUrl      String?   @map("image_url")
+  resourceUrl   String?   @map("resource_url")
+  meetingUrl    String?   @map("meeting_url")
+  dueDate       DateTime? @map("due_date")
+  maxScore      Int       @default(100) @map("max_score")
+  lessonUid     String?   @map("lesson_uid")
+  quizUid       String?   @map("quiz_uid")
+  authorUid     String    @map("author_uid")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  lesson        Lesson?   @relation(fields: [lessonUid], references: [lessonUid])
+  quiz          Quiz?     @relation(fields: [quizUid], references: [quizUid])
+  author        User      @relation("AssignmentAuthor", fields: [authorUid], references: [userUid])
+  submissions   AssignmentSubmission[]
+
+  @@index([lessonUid])
+  @@index([quizUid])
+  @@index([authorUid])
+  @@map("assignments")
+}
+
+model AssignmentSubmission {
+  submissionUid String    @id @default(uuid()) @map("submission_uid")
+  assignmentUid String    @map("assignment_uid")
+  userUid       String    @map("user_uid")
+  content       String    // Submission content
+  score         Int?
+  feedback      String?
+  submittedAt   DateTime  @default(now()) @map("submitted_at")
+  gradedAt      DateTime? @map("graded_at")
+
+  assignment    Assignment @relation(fields: [assignmentUid], references: [assignmentUid])
+  user          User       @relation(fields: [userUid], references: [userUid])
+
+  @@index([assignmentUid])
+  @@index([userUid])
+  @@map("assignment_submissions")
+}
+
+// ============================================================================
+// ENROLLMENT & PROGRESS
+// ============================================================================
+
+model Payment {
+  paymentUid String   @id @default(uuid()) @map("payment_uid")
+  userUid    String?  @map("user_uid")
+  courseUid  String?  @map("course_uid")
+  type       String   @default("DONATION") // DONATION, COURSE_PURCHASE
+  amount     Float    @default(0)
+  currency   String   @default("RUB")
+  status     String   @default("SUCCEEDED") // STUB status
+  provider   String   @default("STUB")
+  title      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User?    @relation(fields: [userUid], references: [userUid])
+  course     Course?  @relation(fields: [courseUid], references: [courseUid])
+
+  @@index([userUid])
+  @@index([courseUid])
+  @@index([type])
+  @@map("payments")
+}
+
+model Enrollment {
+  enrollmentUid String    @id @default(uuid()) @map("enrollment_uid")
+  userUid      String    @map("user_uid")
+  courseUid    String    @map("course_uid")
+  enrolledAt   DateTime  @default(now()) @map("enrolled_at")
+  completedAt  DateTime? @map("completed_at")
+  progress    Float     @default(0) // 0-100
+
+  user         User      @relation(fields: [userUid], references: [userUid])
+  course       Course    @relation(fields: [courseUid], references: [courseUid])
+
+  @@unique([userUid, courseUid])
+  @@index([userUid])
+  @@index([courseUid])
+  @@map("enrollments")
+}
+
+model Progress {
+  progressUid  String    @id @default(uuid()) @map("progress_uid")
+  userUid      String    @map("user_uid")
+  lessonUid    String    @map("lesson_uid")
+  completed    Boolean   @default(false)
+  watchedSeconds Int?    @map("watched_seconds")
+  lastWatchedAt DateTime? @map("last_watched_at")
+  completedAt  DateTime? @map("completed_at")
+
+  user         User      @relation(fields: [userUid], references: [userUid])
+  lesson       Lesson    @relation(fields: [lessonUid], references: [lessonUid])
+
+  @@unique([userUid, lessonUid])
+  @@index([userUid])
+  @@index([lessonUid])
+  @@map("progress")
+}
+
+model QuizAttempt {
+  attemptUid    String        @id @default(uuid()) @map("attempt_uid")
+  userUid       String        @map("user_uid")
+  quizUid       String        @map("quiz_uid")
+  score         Int           // correct answers
+  totalQuestions Int          @map("total_questions")
+  percentage    Float         // 0-100
+  passed        Boolean       @default(false)
+  timeSpent     Int?          @map("time_spent") // seconds
+  answers       String?       // JSON: { questionUid: string, selectedOptions: string[] }[]
+  completedAt   DateTime      @default(now()) @map("completed_at")
+
+  user          User          @relation(fields: [userUid], references: [userUid])
+  quiz          Quiz          @relation(fields: [quizUid], references: [quizUid])
+
+  @@index([userUid])
+  @@index([quizUid])
+  @@index([userUid, quizUid])
+  @@map("quiz_attempts")
+}
+
+// ============================================================================
+// CERTIFICATES & ACHIEVEMENTS
+// ============================================================================
+
+model Certificate {
+  certificateUid String    @id @default(uuid()) @map("certificate_uid")
+  userUid       String    @map("user_uid")
+  courseUid     String    @map("course_uid")
+  issuedAt      DateTime  @default(now()) @map("issued_at")
+  certificateUrl String?  @map("certificate_url")
+
+  user          User      @relation(fields: [userUid], references: [userUid])
+
+  @@unique([userUid, courseUid])
+  @@index([userUid])
+  @@index([courseUid])
+  @@map("certificates")
+}
+
+// ============================================================================
+// SOCIAL & INTERACTION
+// ============================================================================
+
+model Comment {
+  commentUid   String    @id @default(uuid()) @map("comment_uid")
+  content      String
+  userUid      String    @map("user_uid")
+  courseUid    String    @map("course_uid")
+  parentUid    String?   @map("parent_uid") // For replies
+  isApproved   Boolean   @default(false) @map("is_approved")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  user         User      @relation(fields: [userUid], references: [userUid])
+  course       Course    @relation(fields: [courseUid], references: [courseUid])
+
+  @@index([courseUid])
+  @@index([userUid])
+  @@index([parentUid])
+  @@map("comments")
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  notificationUid String    @id @default(uuid()) @map("notification_uid")
+  userUid         String    @map("user_uid")
+  type            String    // COURSE_PUBLISHED, QUIZ_GRADED, COMMENT_REPLY, etc.
+  title           String
+  message         String
+  link            String?
+  isRead          Boolean   @default(false) @map("is_read")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  user            User      @relation(fields: [userUid], references: [userUid])
+
+  @@index([userUid])
+  @@index([userUid, isRead])
+  @@map("notifications")
+}
