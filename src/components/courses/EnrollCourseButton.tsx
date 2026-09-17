@@ -113,7 +113,7 @@ export function EnrollCourseButton({
         <DialogHeader>
           <DialogTitle>Тестовая покупка</DialogTitle>
           <DialogDescription>
-            Платежи отключены — это бесплатная заглушка для проверки сценария покупки.
+            Платежи отключены - это бесплатная заглушка для проверки сценария покупки.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">

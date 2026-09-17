@@ -86,7 +86,7 @@ export default async function UserProfilePage({ params }: PageProps) {
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">
               Этот пользователь закрыл доступ к своему профилю. Администратор может видеть профиль,
-              остальные пользователи — нет.
+              остальные пользователи - нет.
             </p>
             <Link href="/leaderboard">
               <Button variant="outline">Вернуться к лидерам</Button>
