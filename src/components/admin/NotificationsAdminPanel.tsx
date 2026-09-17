@@ -206,7 +206,7 @@ export function NotificationsAdminPanel({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="broadcast">Всем пользователям (broadcast)</SelectItem>
-                <SelectItem value="select">— выбрать пользователя —</SelectItem>
+                <SelectItem value="select">- выбрать пользователя -</SelectItem>
                 {users.map((u) => (
                   <SelectItem key={u.userUid} value={u.userUid}>
                     {u.name || u.email}

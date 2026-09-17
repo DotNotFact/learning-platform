@@ -75,7 +75,7 @@ export default async function PublicHomePage() {
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl">
             Каталог курсов с уровнями, фильтрами и честной статистикой. Бесплатные тесты
-            доступны сразу, платные — после авторизации.
+            доступны сразу, платные - после авторизации.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link href="/catalog">

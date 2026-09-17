@@ -80,7 +80,7 @@ export function AnalyticsPanel({ analytics }: { analytics: AdminAnalytics }) {
                     <TableCell>
                       <div className="font-medium">{c.title}</div>
                       <div className="text-xs text-muted-foreground">
-                        {c.authorName ? `Автор: ${c.authorName}` : "Автор: —"} ·{" "}
+                        {c.authorName ? `Автор: ${c.authorName}` : "Автор: -"} ·{" "}
                         {c.isPublished ? <Badge>published</Badge> : <Badge variant="secondary">draft</Badge>}
                       </div>
                     </TableCell>

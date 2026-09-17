@@ -285,7 +285,7 @@ export function CourseContentManager({
                     <TableCell className="text-sm text-muted-foreground truncate max-w-xs">
                       {video.videoUrl}
                     </TableCell>
-                    <TableCell>{video.duration ? `${video.duration} сек` : "—"}</TableCell>
+                    <TableCell>{video.duration ? `${video.duration} сек` : "-"}</TableCell>
                     <TableCell>{video.orderIndex}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

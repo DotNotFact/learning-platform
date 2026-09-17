@@ -16,7 +16,7 @@ LMS на Next.js: курсы с видеоуроками, тесты, задан
 
 ![Каталог курсов](docs/screenshots/02-catalog.png)
 
-Страница курса — уроки и тесты видно сразу, без лишних кликов:
+Страница курса, где уроки и тесты видно сразу, без лишних кликов:
 
 ![Страница курса](docs/screenshots/03-course-detail.png)
 
@@ -24,7 +24,7 @@ LMS на Next.js: курсы с видеоуроками, тесты, задан
 
 ![Дашборд студента](docs/screenshots/05-dashboard.png)
 
-Админ-панель — курсы, пользователи, категории, теги, модерация комментариев, аналитика:
+Админ-панель, где видно курсы, пользователей, категории, теги, модерацию комментариев, аналитику:
 
 ![Админ-панель](docs/screenshots/06-admin-panel.png)
 
@@ -42,13 +42,13 @@ npm run create-admin
 npm run dev
 ```
 
-Приложение поднимется на `http://localhost:3000`. Учётные данные админа — из вывода `create-admin` (по умолчанию `admin@example.com` / `admin123`, переопределяются через `ADMIN_EMAIL` / `ADMIN_PASSWORD`). Для NextAuth нужен `NEXTAUTH_SECRET` в `.env`.
+Приложение поднимется на `http://localhost:3000`. Учётные данные админа берутся из вывода `create-admin` (по умолчанию `admin@example.com` / `admin123`, переопределяются через `ADMIN_EMAIL` / `ADMIN_PASSWORD`). Для NextAuth нужен `NEXTAUTH_SECRET` в `.env`.
 
 ## Архитектура
 
-- App Router поделён на группы роутов `(public)`, `(protected)`, `(auth)` — доступ проверяется на уровне layout и API
+- App Router поделён на группы роутов `(public)`, `(protected)`, `(auth)`: доступ проверяется на уровне layout и API
 - RBAC-иерархия ролей проверяется и в API-роутах, и в UI (`src/lib/rbac.ts`)
-- Prisma 7 работает через driver adapter (`better-sqlite3`) вместо встроенного Rust-движка — переезд на Postgres/MySQL требует замены только адаптера, схема не меняется
+- Prisma 7 работает через driver adapter (`better-sqlite3`) вместо встроенного Rust-движка, поэтому переезд на Postgres/MySQL требует замены только адаптера, схема не меняется
 
 ## Статус
 

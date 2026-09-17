@@ -68,7 +68,7 @@ export function UsersTable({ users }: UsersTableProps) {
             users.map((user) => (
               <TableRow key={user.userUid}>
                 <TableCell className="font-medium">{user.email}</TableCell>
-                <TableCell>{user.name || "—"}</TableCell>
+                <TableCell>{user.name || "-"}</TableCell>
                 <TableCell>
                   <Badge variant={getRoleBadgeVariant(user.role)}>{getRoleLabel(user.role)}</Badge>
                 </TableCell>
